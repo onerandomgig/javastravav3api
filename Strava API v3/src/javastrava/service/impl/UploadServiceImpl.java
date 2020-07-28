@@ -10,7 +10,6 @@ import javastrava.model.reference.StravaActivityType;
 import javastrava.service.UploadService;
 import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.mime.TypedFile;
 
 /**
  * <p>

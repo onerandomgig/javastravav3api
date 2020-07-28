@@ -1,8 +1,8 @@
 package javastrava.api.async;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * @author Dan Shannon
@@ -24,21 +24,11 @@ public class StravaAPICallback<T> implements Callback<T> {
 		this.future = completableFuture;
 	}
 
-	/**
-	 * @see retrofit.Callback#failure(retrofit.RetrofitError)
-	 */
-	@Override
-	public void failure(final RetrofitError error) {
-		this.future.completeExceptionally(error.getCause());
+	public void onResponse(Call<T> t, Response<T> response) {
+		this.future.complete(response.body());
 	}
 
-	/**
-	 * @see retrofit.Callback#success(java.lang.Object, retrofit.client.Response)
-	 */
-	@Override
-	public void success(final T t, final Response response) {
-		this.future.complete(t);
-
+	public void onFailure(Call<T> t, Throwable error) {
+		this.future.completeExceptionally(error);
 	}
-
 }

@@ -3,9 +3,9 @@ package javastrava.api;
 import javastrava.api.async.StravaAPICallback;
 import javastrava.model.StravaSegmentEffort;
 import javastrava.service.exception.NotFoundException;
-import retrofit.client.Response;
-import retrofit.http.GET;
-import retrofit.http.Path;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
 
 /**
  * <p>

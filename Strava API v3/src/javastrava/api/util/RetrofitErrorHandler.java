@@ -20,10 +20,7 @@ import javastrava.service.exception.StravaInternalServerErrorException;
 import javastrava.service.exception.StravaServiceUnavailableException;
 import javastrava.service.exception.StravaUnknownAPIException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.ErrorHandler;
-import retrofit.RetrofitError;
-import retrofit.RetrofitError.Kind;
-import retrofit.client.Response;
+import retrofit2.Response;
 
 /**
  * <p>

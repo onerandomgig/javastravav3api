@@ -8,12 +8,12 @@ import javastrava.model.StravaClubEvent;
 import javastrava.model.StravaClubEventJoinResponse;
 import javastrava.service.exception.NotFoundException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.client.Response;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Response;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * <p>

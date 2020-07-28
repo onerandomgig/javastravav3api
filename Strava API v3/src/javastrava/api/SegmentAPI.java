@@ -20,11 +20,11 @@ import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.NotFoundException;
 import javastrava.service.exception.UnauthorizedException;
 import javastrava.util.Paging;
-import retrofit.client.Response;
-import retrofit.http.GET;
-import retrofit.http.PUT;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * <p>
@@ -92,9 +92,9 @@ public interface SegmentAPI {
 	 */
 	@GET("/segments/{id}/leaderboard")
 	public StravaSegmentLeaderboard getSegmentLeaderboard(@Path("id") final Integer segmentId, @Query("gender") final StravaGender gender, @Query("age_group") final StravaAgeGroup ageGroup,
-			@Query("weight_class") final StravaWeightClass weightClass, @Query("following") final Boolean following, @Query("club_id") final Integer clubId,
-			@Query("date_range") final StravaLeaderboardDateRange dateRange, @Query("page") final Integer page, @Query("per_page") final Integer perPage,
-			@Query("context_entries") final Integer contextEntries) throws NotFoundException, BadRequestException;
+														  @Query("weight_class") final StravaWeightClass weightClass, @Query("following") final Boolean following, @Query("club_id") final Integer clubId,
+														  @Query("date_range") final StravaLeaderboardDateRange dateRange, @Query("page") final Integer page, @Query("per_page") final Integer perPage,
+														  @Query("context_entries") final Integer contextEntries) throws NotFoundException, BadRequestException;
 
 	/**
 	 * @see javastrava.service.SegmentService#getSegmentLeaderboard(Integer, StravaGender, StravaAgeGroup, StravaWeightClass, Boolean, Integer, StravaLeaderboardDateRange,

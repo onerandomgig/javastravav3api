@@ -3,14 +3,12 @@ package javastrava.api.util;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import com.squareup.okhttp.OkHttpClient;
-
 import javastrava.config.StravaConfig;
 import javastrava.service.Strava;
-import retrofit.client.Header;
-import retrofit.client.OkClient;
-import retrofit.client.Request;
-import retrofit.client.Response;
+import okhttp3.Headers;
+import okhttp3.Interceptor;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
@@ -20,42 +18,24 @@ import retrofit.client.Response;
  * @author Dan Shannon
  *
  */
-public class RetrofitClientResponseInterceptor extends OkClient {
+public class RetrofitClientResponseInterceptor implements Interceptor {
 
-	/**
-	 * No-args constructor
-	 */
-	public RetrofitClientResponseInterceptor() {
-		super();
-	}
-	/**
-	 * @param client The client to use
-	 */
-	public RetrofitClientResponseInterceptor(final OkHttpClient client) {
-		super(client);
-	}
-
-	/**
-	 * <p>
-	 * Gets and stores the values of the rate limit information headers returned by Strava with each response
-	 * </p>
-	 * 
-	 * @see retrofit.client.OkClient#execute(retrofit.client.Request)
-	 */
 	@Override
-	public Response execute(final Request request) throws IOException {
-		Response response = super.execute(request);
+	public Response intercept(@NotNull Chain chain) throws IOException {
 
-		for (Header header : response.getHeaders()) {
-			if (header.getName().equals(StravaConfig.string("strava.rate-limit-usage-header-name"))) { //$NON-NLS-1$
-				String values = header.getValue();
+		Response response = chain.proceed(chain.request());
+		Headers headers = response.headers();
+
+		for (String name : headers.names()) {
+			if (name.equals(StravaConfig.string("strava.rate-limit-usage-header-name"))) { //$NON-NLS-1$
+				String values = headers.get(name);
 				StringTokenizer tokenizer = new StringTokenizer(values, ","); //$NON-NLS-1$
 				Strava.REQUEST_RATE_CURRENT = Integer.valueOf(tokenizer.nextToken()).intValue();
 				Strava.REQUEST_RATE_DAILY = Integer.valueOf(tokenizer.nextToken()).intValue();
 				Strava.requestRateCurrentPercentage();
 			}
-			if (header.getName().equals(StravaConfig.string("strava.rate-limit-limit-header-name"))) { //$NON-NLS-1$
-				String values = header.getValue();
+			if (name.equals(StravaConfig.string("strava.rate-limit-limit-header-name"))) { //$NON-NLS-1$
+				String values = headers.get(name);
 				StringTokenizer tokenizer = new StringTokenizer(values, ","); //$NON-NLS-1$
 				Strava.RATE_LIMIT_CURRENT = Integer.valueOf(tokenizer.nextToken()).intValue();
 				Strava.RATE_LIMIT_DAILY = Integer.valueOf(tokenizer.nextToken()).intValue();

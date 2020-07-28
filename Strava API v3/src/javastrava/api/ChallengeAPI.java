@@ -2,11 +2,11 @@ package javastrava.api;
 
 import javastrava.api.async.StravaAPICallback;
 import javastrava.model.StravaChallenge;
-import retrofit.client.Response;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
+import retrofit2.Response;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 /**
  * <p>

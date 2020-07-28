@@ -4,9 +4,9 @@ import javastrava.api.async.StravaAPICallback;
 import javastrava.auth.TokenService;
 import javastrava.auth.model.TokenResponse;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.POST;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 
 /**
  * <p>

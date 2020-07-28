@@ -5,12 +5,12 @@ import javastrava.model.StravaUploadResponse;
 import javastrava.model.reference.StravaActivityType;
 import javastrava.service.UploadService;
 import javastrava.service.exception.BadRequestException;
-import retrofit.http.GET;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.Part;
-import retrofit.http.Path;
-import retrofit.mime.TypedFile;
+import okhttp3.MultipartBody;
+import retrofit2.http.GET;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
 
 /**
  * <p>
@@ -26,7 +26,7 @@ public interface UploadAPI {
 	 *
 	 * @param uploadId
 	 *            The upload id as given back in the response to
-	 *            {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, TypedFile)}
+	 *            {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, MultipartBody.Part)}
 	 * @return Upload response containing the upload id and activity id and current status of the upload
 	 */
 	@GET("/uploads/{id}")
@@ -37,7 +37,7 @@ public interface UploadAPI {
 	 *
 	 * @param uploadId
 	 *            The upload id as given back in the response to
-	 *            {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, TypedFile, StravaAPICallback)}
+	 *            {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, MultipartBody.Part, StravaAPICallback)}
 	 * @param callback
 	 *            The callback to execute on completion
 	 */
@@ -76,7 +76,7 @@ public interface UploadAPI {
 	public StravaUploadResponse upload(@Part("activity_type") final StravaActivityType activityType,
 			@Part("name") final String name, @Part("description") final String description, @Part("private") final Boolean _private,
 			@Part("trainer") final Boolean trainer, @Part("commute") Boolean commute, @Part("data_type") final String dataType,
-			@Part("external_id") final String externalId, @Part("file") final TypedFile file) throws BadRequestException;
+			@Part("external_id") final String externalId, @Part("file") final MultipartBody.Part file) throws BadRequestException;
 
 	/**
 	 * @see javastrava.service.UploadService#upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String,
@@ -111,7 +111,7 @@ public interface UploadAPI {
 	public void upload(@Part("activity_type") final StravaActivityType activityType, @Part("name") final String name,
 			@Part("description") final String description, @Part("private") final Boolean _private,
 			@Part("trainer") final Boolean trainer, @Part("commute") Boolean commute, @Part("data_type") final String dataType,
-			@Part("external_id") final String externalId, @Part("file") final TypedFile file,
+			@Part("external_id") final String externalId, @Part("file") final MultipartBody.Part file,
 			final StravaAPICallback<StravaUploadResponse> callback) throws BadRequestException;
 
 }

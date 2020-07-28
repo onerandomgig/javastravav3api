@@ -9,7 +9,6 @@ import javastrava.auth.model.TokenResponse;
 import javastrava.auth.ref.AuthorisationScope;
 import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.RestAdapter;
 
 /**
  * @author Dan Shannon

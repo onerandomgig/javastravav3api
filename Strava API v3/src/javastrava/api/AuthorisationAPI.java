@@ -4,9 +4,9 @@ import javastrava.auth.model.TokenResponse;
 import javastrava.auth.ref.AuthorisationScope;
 import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.POST;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 
 /**
  * <p>

@@ -1,14 +1,16 @@
 package javastrava.api;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import javastrava.api.async.StravaAPICallback;
 import javastrava.api.async.StravaAPIFuture;
 import javastrava.api.util.RetrofitClientResponseInterceptor;
 import javastrava.api.util.RetrofitErrorHandler;
-import javastrava.auth.impl.AuthorisationServiceImpl;
 import javastrava.auth.model.Token;
 import javastrava.auth.model.TokenResponse;
 import javastrava.auth.ref.AuthorisationScope;
@@ -55,14 +57,19 @@ import javastrava.model.webhook.reference.StravaSubscriptionObjectType;
 import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.NotFoundException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.RestAdapter;
-import retrofit.RestAdapter.LogLevel;
-import retrofit.client.Response;
-import retrofit.converter.GsonConverter;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.Path;
-import retrofit.mime.TypedFile;
+
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
 
 /**
  * <p>
@@ -77,6 +84,7 @@ public class API {
 	 * Instance of authorisation API which is used for token exchange
 	 */
 	private static AuthorisationAPI authorisationAPI;
+    public static Logger log = LogManager.getLogger();
 
 	/**
 	 * <p>
@@ -87,10 +95,30 @@ public class API {
 	 */
 	public static AuthorisationAPI authorisationInstance() {
 		if (authorisationAPI == null) {
-			authorisationAPI = new RestAdapter.Builder().setClient(new RetrofitClientResponseInterceptor()).setConverter(new GsonConverter(new JsonUtilImpl().getGson()))
-					.setLogLevel(API.logLevel(AuthorisationServiceImpl.class)).setEndpoint(StravaConfig.AUTH_ENDPOINT).setErrorHandler(new RetrofitErrorHandler()).build()
-					.create(AuthorisationAPI.class);
+
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            Gson gson = gsonBuilder.create();
+
+            // HttpLoggingInterceptor
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(message -> log.info(message));
+            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            // OkHttpClient. Be conscious with the order
+            OkHttpClient okHttpClient = new OkHttpClient()
+                    .newBuilder()
+                    // httpLogging interceptor for logging network requests
+                    .addInterceptor(httpLoggingInterceptor)
+                    // intercept the rate limit data returned by the API in headers
+                    .addInterceptor(new RetrofitClientResponseInterceptor())
+                    .build();
+
+			authorisationAPI = new Retrofit.Builder().client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .baseUrl(StravaConfig.AUTH_ENDPOINT)
+					.build()
+                    .create(AuthorisationAPI.class);
 		}
+
 		return authorisationAPI;
 	}
 
@@ -104,7 +132,7 @@ public class API {
 	 * @return The callback
 	 */
 	private static <T> StravaAPICallback<T> callback(final StravaAPIFuture<T> completableFuture) {
-		return new StravaAPICallback<T>(completableFuture);
+		return new StravaAPICallback<>(completableFuture);
 	}
 
 	/**
@@ -128,18 +156,38 @@ public class API {
 	 * @return A REST service
 	 */
 	public static <T> T instance(final Class<T> class1, final Token token) {
-		return new RestAdapter.Builder()
-				// Client overrides handling of Strava-specific headers in the response, to deal with rate limiting
-				.setClient(new RetrofitClientResponseInterceptor())
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        Gson gson = gsonBuilder.create();
+
+        // HttpLoggingInterceptor - Log level is determined per API service
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(message -> log.info(message));
+        httpLoggingInterceptor.setLevel(API.logLevel(class1));
+
+        OkHttpClient okHttpClient = new OkHttpClient()
+                .newBuilder()
+                // httpLogging interceptor for logging network requests
+                .addInterceptor(httpLoggingInterceptor)
+                // intercept the rate limit data returned by the API in headers
+                .addInterceptor(new RetrofitClientResponseInterceptor())
+                // Request interceptor adds the access token into headers for each request
+                .addInterceptor(chain -> {
+                    Request origReq = chain.request();
+                    Request newReq = origReq.newBuilder().
+                            addHeader(StravaConfig.string("strava.authorization_header_name"),
+                                    token.getTokenType() + " " + token.getToken())
+                            .method(origReq.method(), origReq.body())
+                    .build();
+                    return chain.proceed(newReq);
+                })
+                .build();
+
+        return new Retrofit.Builder()
+                .client(okHttpClient)
 				// Converter is a GSON implementation with custom converters
-				.setConverter(new GsonConverter(new JsonUtilImpl().getGson()))
-				// Log level is determined per API service
-				.setLogLevel(API.logLevel(class1))
-				// Endpoint is the same for all services
-				.setEndpoint(StravaConfig.ENDPOINT)
-				// Request interceptor adds the access token into headers for each request
-				.setRequestInterceptor(request -> request.addHeader(StravaConfig.string("strava.authorization_header_name"), //$NON-NLS-1$
-						token.getTokenType() + " " + token.getToken())) //$NON-NLS-1$
+				.addConverterFactory(GsonConverterFactory.create(gson))
+                // Endpoint is the same for all services
+				.baseUrl(StravaConfig.ENDPOINT)
 				// Error handler deals with Strava's implementations of 400, 401, 403, 404 errors etc.
 				.setErrorHandler(new RetrofitErrorHandler()).build().create(class1);
 	}
@@ -149,13 +197,13 @@ public class API {
 	 *            Class for which log level is to be determined
 	 * @return The appropriate log level for the class
 	 */
-	public static LogLevel logLevel(final Class<?> class1) {
+	public static HttpLoggingInterceptor.Level logLevel(final Class<?> class1) {
 		final String propertyName = "retrofit." + class1.getName() + ".log_level"; //$NON-NLS-1$ //$NON-NLS-2$
-		RestAdapter.LogLevel logLevel = null;
+        HttpLoggingInterceptor.Level logLevel;
 		try {
-			logLevel = RestAdapter.LogLevel.valueOf(StravaConfig.string(propertyName));
+			logLevel = HttpLoggingInterceptor.Level.valueOf(StravaConfig.string(propertyName));
 		} catch (final MissingResourceException e) {
-			logLevel = RestAdapter.LogLevel.valueOf(StravaConfig.string("retrofit.log_level")); //$NON-NLS-1$
+			logLevel = HttpLoggingInterceptor.Level.valueOf(StravaConfig.string("retrofit.log_level")); //$NON-NLS-1$
 		}
 		return logLevel;
 	}
@@ -2559,10 +2607,10 @@ public class API {
 	 * @throws BadRequestException
 	 *             If required elements of the call are missing
 	 * @see javastrava.api.UploadAPI#upload(javastrava.model.reference.StravaActivityType, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean,
-	 *      java.lang.String, java.lang.String, retrofit.mime.TypedFile)
+	 *      java.lang.String, java.lang.String, MultipartBody.Part)
 	 */
 	public StravaUploadResponse upload(final StravaActivityType activityType, final String name, final String description, final Boolean _private, final Boolean trainer, final Boolean commute,
-			final String dataType, final String externalId, final TypedFile file) throws BadRequestException {
+			final String dataType, final String externalId, final MultipartBody.Part file) throws BadRequestException {
 		return this.uploadAPI.upload(activityType, name, description, _private, trainer, commute, dataType, externalId, file);
 	}
 

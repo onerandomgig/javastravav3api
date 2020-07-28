@@ -8,10 +8,10 @@ import javastrava.service.StreamService;
 import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.NotFoundException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.client.Response;
-import retrofit.http.GET;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * <p>
@@ -43,7 +43,7 @@ public interface StreamAPI {
 	 */
 	@GET("/activities/{id}/streams/{types}")
 	public StravaStream[] getActivityStreams(@Path("id") final Long activityId, @Path("types") final String types, @Query("resolution") final StravaStreamResolutionType resolution,
-			@Query("series_type") final StravaStreamSeriesDownsamplingType seriesType) throws UnauthorizedException, NotFoundException, BadRequestException;
+											 @Query("series_type") final StravaStreamSeriesDownsamplingType seriesType) throws UnauthorizedException, NotFoundException, BadRequestException;
 
 	/**
 	 * @see javastrava.service.StreamService#getActivityStreams(Long, StravaStreamResolutionType, StravaStreamSeriesDownsamplingType, javastrava.model.reference.StravaStreamType...)
@@ -91,7 +91,7 @@ public interface StreamAPI {
 	 */
 	@GET("/activities/{id}/streams/{types}")
 	public Response getActivityStreamsRaw(@Path("id") final Long activityId, @Path("types") final String types, @Query("resolution") final StravaStreamResolutionType resolution,
-			@Query("series_type") final StravaStreamSeriesDownsamplingType seriesType) throws UnauthorizedException, NotFoundException, BadRequestException;
+										  @Query("series_type") final StravaStreamSeriesDownsamplingType seriesType) throws UnauthorizedException, NotFoundException, BadRequestException;
 
 	/**
 	 * @see javastrava.service.StreamService#getEffortStreams(Long, StravaStreamResolutionType, StravaStreamSeriesDownsamplingType, javastrava.model.reference.StravaStreamType...)

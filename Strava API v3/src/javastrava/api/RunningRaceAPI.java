@@ -4,10 +4,10 @@ import javastrava.api.async.StravaAPICallback;
 import javastrava.model.StravaRunningRace;
 import javastrava.service.exception.NotFoundException;
 import javastrava.service.exception.UnauthorizedException;
-import retrofit.client.Response;
-import retrofit.http.GET;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * <p>

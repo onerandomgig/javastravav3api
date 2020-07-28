@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javastrava.auth.ref.AuthorisationScope;
 import javastrava.model.StravaRoute;
-import retrofit.http.Path;
+import retrofit2.http.Path;
 
 /**
  * <p>
