@@ -15,7 +15,6 @@ import javastrava.auth.model.Token;
 import javastrava.auth.model.TokenResponse;
 import javastrava.auth.ref.AuthorisationScope;
 import javastrava.config.StravaConfig;
-import javastrava.json.impl.JsonUtilImpl;
 import javastrava.model.StravaActivity;
 import javastrava.model.StravaActivityUpdate;
 import javastrava.model.StravaActivityZone;
@@ -331,7 +330,7 @@ public class API {
 
 	/**
 	 * @param id
-	 *            The upload id as given back in the response to {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, TypedFile)}
+	 *            The upload id as given back in the response to {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, MultipartBody.Part)}
 	 * @return Upload response containing the upload id and activity id and current status of the upload
 	 * @see javastrava.api.UploadAPI#checkUploadStatus(java.lang.Long)
 	 */
@@ -341,7 +340,7 @@ public class API {
 
 	/**
 	 * @param uploadId
-	 *            The upload id as given back in the response to {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, TypedFile)}
+	 *            The upload id as given back in the response to {@link #upload(StravaActivityType, String, String, Boolean, Boolean, Boolean, String, String, MultipartBody.Part)}
 	 * @return future The {@link CompletableFuture} on which to call future.complete() when the API returns
 	 * @see javastrava.api.UploadAPI#checkUploadStatus(java.lang.Long, javastrava.api.async.StravaAPICallback)
 	 */
@@ -2639,10 +2638,10 @@ public class API {
 	 * @throws BadRequestException
 	 *             If required elements of the call are missing
 	 * @see javastrava.api.UploadAPI#upload(javastrava.model.reference.StravaActivityType, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean,
-	 *      java.lang.String, java.lang.String, retrofit.mime.TypedFile, javastrava.api.async.StravaAPICallback)
+	 *      java.lang.String, java.lang.String, MultipartBody.Part, javastrava.api.async.StravaAPICallback)
 	 */
 	public StravaAPIFuture<StravaUploadResponse> uploadAsync(final StravaActivityType activityType, final String name, final String description, final Boolean _private, final Boolean trainer,
-			final Boolean commute, final String dataType, final String externalId, final TypedFile file) throws BadRequestException {
+			final Boolean commute, final String dataType, final String externalId, final MultipartBody.Part file) throws BadRequestException {
 		final StravaAPIFuture<StravaUploadResponse> future = new StravaAPIFuture<StravaUploadResponse>();
 		this.uploadAPI.upload(activityType, name, description, _private, trainer, commute, dataType, externalId, file, callback(future));
 		return future;

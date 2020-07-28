@@ -1,6 +1,8 @@
 package javastrava.service.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
 import javastrava.auth.model.Token;
@@ -8,8 +10,10 @@ import javastrava.config.Messages;
 import javastrava.model.StravaUploadResponse;
 import javastrava.model.reference.StravaActivityType;
 import javastrava.service.UploadService;
-import javastrava.service.exception.BadRequestException;
 import javastrava.service.exception.UnauthorizedException;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 /**
  * <p>
@@ -101,9 +105,17 @@ public class UploadServiceImpl extends StravaServiceImpl implements UploadServic
 					String.format(Messages.string("UploadServiceImpl.fileDoesNotExist"), file.getName())); //$NON-NLS-1$
 		}
 		try {
-			return this.api.upload(activityType, name, description, _private, trainer, commute, dataType, externalId,
-					new TypedFile("text/xml", file)); //$NON-NLS-1$
-		} catch (final BadRequestException e) {
+
+			// create RequestBody instance from file
+            String mimeType = Files.probeContentType(file.toPath());
+			RequestBody requestFile = RequestBody.create(file, MediaType.parse(mimeType));
+
+			// MultipartBody.Part is used to send also the actual file name
+			MultipartBody.Part body =
+					MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+
+			return this.api.upload(activityType, name, description, _private, trainer, commute, dataType, externalId, body); //$NON-NLS-1$
+		} catch (final IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
