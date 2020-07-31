@@ -1,6 +1,5 @@
 package javastrava.api;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.concurrent.CompletableFuture;
@@ -10,7 +9,6 @@ import com.google.gson.GsonBuilder;
 import javastrava.api.async.StravaAPICallback;
 import javastrava.api.async.StravaAPIFuture;
 import javastrava.api.util.RetrofitClientResponseInterceptor;
-import javastrava.api.util.RetrofitErrorHandler;
 import javastrava.auth.model.Token;
 import javastrava.auth.model.TokenResponse;
 import javastrava.auth.ref.AuthorisationScope;
@@ -187,8 +185,7 @@ public class API {
 				.addConverterFactory(GsonConverterFactory.create(gson))
                 // Endpoint is the same for all services
 				.baseUrl(StravaConfig.ENDPOINT)
-				// Error handler deals with Strava's implementations of 400, 401, 403, 404 errors etc.
-				.setErrorHandler(new RetrofitErrorHandler()).build().create(class1);
+				.build().create(class1);
 	}
 
 	/**

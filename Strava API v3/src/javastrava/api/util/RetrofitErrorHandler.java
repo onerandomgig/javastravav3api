@@ -1,7 +1,5 @@
 package javastrava.api.util;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +36,7 @@ import retrofit2.Response;
  * @author Dan Shannon
  *
  */
-public class RetrofitErrorHandler implements ErrorHandler {
+public class RetrofitErrorHandler {
 	/**
 	 * Logger
 	 */
@@ -68,53 +66,50 @@ public class RetrofitErrorHandler implements ErrorHandler {
 	/**
 	 * JSON utilities for serialisation and deserialisation
 	 */
-	JsonUtil json = new JsonUtilImpl();
-
-	/**
-	 * @see retrofit.ErrorHandler#handleError(retrofit.RetrofitError)
-	 */
-	@Override
-	public Throwable handleError(final RetrofitError cause) {
-		final Response r = cause.getResponse();
-		StravaResponse response = null;
-		final String status = (r == null ? Messages.string("RetrofitErrorHandler.unknownError") //$NON-NLS-1$
-				: r.getStatus() + " " + r.getReason()); //$NON-NLS-1$
+	public static Throwable handleError(final Response error, Throwable cause) {
+	    StravaResponse response = new StravaResponse();
+		final String status = (error == null ? Messages.string("RetrofitErrorHandler.unknownError") //$NON-NLS-1$
+				: error.code() + " " + error.message()); //$NON-NLS-1$
 
 		// Handle network errors
-		if (cause.getKind() == Kind.NETWORK) {
-			return new StravaAPINetworkException(null, response, cause);
+		if (error.code() == 500) {
+			response.setMessage(error.message());
+
+			StravaAPIError apiError = new StravaAPIError();
+			apiError.setCode(error.code() + "");
+			apiError.setResource(error.errorBody().toString());
+			response.addError(apiError);
+			return new StravaAPINetworkException(null, response, null);
 		}
 
-		if (r == null) {
+		if (error == null) {
 			return new StravaUnknownAPIException(status, response, cause);
 		}
 
 		try {
-			if (r.getBody() == null) {
+			if (error.errorBody() == null) {
 				response = new StravaResponse();
 				response.setMessage(cause.getMessage());
 			} else {
-				response = this.json.deserialise(r.getBody().in(), StravaResponse.class);
+                JsonUtil json = new JsonUtilImpl();
+                response = json.deserialise(error.errorBody().toString(), StravaResponse.class);
 			}
 		} catch (final JsonSerialisationException e) {
 			response = new StravaResponse();
-			response.setMessage(r.getBody().toString());
-		} catch (final IOException e) {
-			response = new StravaResponse();
-			response.setMessage(r.getBody().toString());
+			response.setMessage(error.errorBody().toString());
 		} catch (final Exception e) {
 			response = new StravaResponse();
 			response.setMessage(cause.toString());
 		}
 
 		// Handle 400 Bad request error
-		if (r.getStatus() == 400) {
+		if (error.code() == 400) {
 			log.warn(status + " : " + response); //$NON-NLS-1$
 			return new BadRequestException(status, response, cause);
 		}
 
 		// Handle 401 Unauthorized error
-		if (r.getStatus() == 401) {
+		if (error.code() == 401) {
 			if (tokenInvalid(response)) {
 				log.info(status + " : " + response); //$NON-NLS-1$
 				return new InvalidTokenException(status, response, cause);
@@ -125,7 +120,7 @@ public class RetrofitErrorHandler implements ErrorHandler {
 		}
 
 		// Handle 403 forbidden error
-		if (r.getStatus() == 403) {
+		if (error.code() == 403) {
 			log.info(status + " : " + response); //$NON-NLS-1$
 			if (response.getMessage().equals(Messages.string("RetrofitErrorHandler.rateLimitExceeded"))) { //$NON-NLS-1$
 				return new StravaAPIRateLimitException(status, response, cause);
@@ -134,25 +129,25 @@ public class RetrofitErrorHandler implements ErrorHandler {
 		}
 
 		// Handle 404 Not Found error
-		if (r.getStatus() == 404) {
+		if (error.code() == 404) {
 			log.info(status + " : " + response); //$NON-NLS-1$
 			return new NotFoundException(response, cause);
 		}
 
 		// Handle 429 Too many requests error
-		if (r.getStatus() == 429) {
+		if (error.code() == 429) {
 			log.warn(status + " : " + response); //$NON-NLS-1$
 			return new StravaAPIRateLimitException(status, response, cause);
 		}
 
 		// Handle 500 Internal Server error
-		if (r.getStatus() == 500) {
+		if (error.code() == 500) {
 			log.error(status + " : " + response); //$NON-NLS-1$
 			return new StravaInternalServerErrorException(status, response, cause);
 		}
 
 		// Handle 503 Service Unavailable error
-		if (r.getStatus() == 503) {
+		if (error.code() == 503) {
 			log.error(status + " : " + response); //$NON-NLS-1$
 			return new StravaServiceUnavailableException(status, response, cause);
 		}
@@ -160,5 +155,4 @@ public class RetrofitErrorHandler implements ErrorHandler {
 		log.error(response);
 		return new StravaUnknownAPIException(status, response, cause);
 	}
-
 }

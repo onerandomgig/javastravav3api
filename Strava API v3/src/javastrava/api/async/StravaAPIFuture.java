@@ -24,16 +24,15 @@ public class StravaAPIFuture<T> {
 	 * No argument constructor provides the wrapped future
 	 */
 	public StravaAPIFuture() {
-		this.future = new CompletableFuture<T>();
+		this.future = new CompletableFuture<>();
 	}
 
 	/**
 	 * @param result The object to return via the future
 	 */
 	public void complete(final T result) {
-		this.future.complete(result);
-
-	}
+        this.future.complete(result);
+    }
 
 	/**
 	 * @param cause Cause of the exceptional completion

@@ -1,5 +1,6 @@
 package javastrava.api.async;
 
+import javastrava.api.util.RetrofitErrorHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -25,10 +26,16 @@ public class StravaAPICallback<T> implements Callback<T> {
 	}
 
 	public void onResponse(Call<T> t, Response<T> response) {
-		this.future.complete(response.body());
+	    if (response.isSuccessful())
+            this.future.complete(response.body());
+	    else {
+            RetrofitErrorHandler.handleError(response, null);
+        }
 	}
 
 	public void onFailure(Call<T> t, Throwable error) {
+	    t.request().url().toString();
+	    RetrofitErrorHandler.handleError(null, error);
 		this.future.completeExceptionally(error);
 	}
 }

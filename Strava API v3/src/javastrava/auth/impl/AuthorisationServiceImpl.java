@@ -31,11 +31,11 @@ public class AuthorisationServiceImpl implements AuthorisationService {
 	}
 
 	/**
-	 * @see javastrava.auth.AuthorisationService#tokenExchange(java.lang.Integer, java.lang.String, java.lang.String, AuthorisationScope...)
+	 * @see javastrava.auth.AuthorisationService#tokenExchange(java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, AuthorisationScope...)
 	 */
 	@Override
-	public Token tokenExchange(final Integer clientId, final String clientSecret, final String code, final AuthorisationScope... scopes) throws BadRequestException, UnauthorizedException {
-		final TokenResponse response = this.api.tokenExchange(clientId, clientSecret, code);
+	public Token tokenExchange(final Integer clientId, final String clientSecret, final String code, final String grantType, final String refreshToken, final AuthorisationScope... scopes) throws BadRequestException, UnauthorizedException {
+		final TokenResponse response = this.api.tokenExchange(clientId, clientSecret, code, grantType, refreshToken);
 		final Token token = new Token(response, scopes);
 		TokenManager.instance().storeToken(token);
 		return token;

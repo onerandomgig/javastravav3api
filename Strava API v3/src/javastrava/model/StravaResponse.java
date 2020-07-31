@@ -1,5 +1,6 @@
 package javastrava.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javastrava.model.reference.StravaResourceState;
@@ -27,6 +28,13 @@ public class StravaResponse implements StravaEntity {
 	 */
 	public StravaResponse() {
 		super();
+	}
+
+	public void addError(StravaAPIError error) {
+		if (errors == null)
+			errors = new ArrayList<>();
+
+		errors.add(error);
 	}
 
 	/**
